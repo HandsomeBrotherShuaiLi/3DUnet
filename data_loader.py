@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 """
 原始的图片是vol.nrrd，格式是h,w,深度
-标注的信息是label.nrrd,格式也是H,w,深度，每一个具体的点上的值就是该像素属于的类别
+标注的信息是label.nrrd,格式也是h,w,深度，每一个具体的点上的值就是该像素属于的类别
 """
 class data_loader(object):
     def __init__(self,data_dir):
