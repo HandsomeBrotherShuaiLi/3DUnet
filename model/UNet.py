@@ -5,6 +5,10 @@ from keras.layers.merge import concatenate
 """
 3D U-Net,注意3D卷积的输入tensor维度!!!! 后面再做GAN
 (batch, conv_dim1, conv_dim2, conv_dim3, channels)
+tf.nn.
+(batch, Depth, H, W, channels)
+(batch, depth, height, width, channels)
+reference: https://www.tensorflow.org/api_docs/python/tf/layers/Conv3D
 """
 class UNet(object):
     def __init__(self,input_shape,label_numbel,depth=4,n_base_filters=32,
@@ -55,8 +59,7 @@ class UNet(object):
                 level.append([layer1,layer2])
         for layer_depth in range(self.depth-2,-1,-1):
             #channel last format!!!!!!!
-            #bs,n,w,h,c
-            #bs,63,w,h,1
+            #bs,w,h,n,c
             up_convolution=self.up_convolution_block(
                 pool_size=self.pool_size,deconvolution=self.deconvolution,n_filters=current_layer.get_shape()[-1],
                 input_layer=current_layer,name='up_conv_stage2_{}'.format(str(layer_depth))
@@ -78,7 +81,7 @@ class UNet(object):
 
 if __name__=="__main__":
     m=UNet(
-        input_shape=(512,512,None,1),
+        input_shape=(64,512,512,1),
         label_numbel=5
     )
     m.model()
