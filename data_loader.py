@@ -19,14 +19,15 @@ class data_loader(object):
                     filepath=os.path.join(path,i)
                     data,nrrd_options=nrrd.read(filepath)
                     print(i,data.shape)
+                    print(np.unique(data))
                     # for j in nrrd_options:
                     #     print(j, nrrd_options[j])
-                elif i.endswith('seg.nrrd'):
-                    filepath = os.path.join(path, i)
-                    data, nrrd_options = nrrd.read(filepath)
-                    print(i,data.shape)
-                    for j in nrrd_options:
-                        print(j,nrrd_options[j])
+                # elif i.endswith('seg.nrrd'):
+                #     filepath = os.path.join(path, i)
+                #     data, nrrd_options = nrrd.read(filepath)
+                #     print(i,data.shape)
+                #     for j in nrrd_options:
+                #         print(j,nrrd_options[j])
                 elif i.endswith('label.nrrd'):
                     filepath = os.path.join(path, i)
                     data, nrrd_options = nrrd.read(filepath)
