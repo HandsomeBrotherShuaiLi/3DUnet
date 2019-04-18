@@ -57,8 +57,6 @@ class DataGenerator(object):
                         """
                         patch_y,_=nrrd.read(os.path.join(folder_name, 'Segmentation-label.nrrd'))
                         patch_y=patch_y[patch_index*self.patch_depth:(patch_index+1)*self.patch_depth,:,:]
-                        # print(patch_x.shape,patch_y.shape)
-                        # y=np.zeros(shape=(patch_y.shape[0],patch_y.shape[1],patch_y.shape[2],self.labels))
                         temp_s=patch_y.shape
                         patch_y=np.eye(self.labels)[patch_y.reshape(-1)]
                         patch_y=patch_y.reshape((temp_s[0],temp_s[1],temp_s[2],self.labels))
