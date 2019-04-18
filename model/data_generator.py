@@ -4,7 +4,8 @@ data generator(with and without augment)
 """
 原始的图片是vol.nrrd，格式是[depth,h,w]
 标注的信息是label.nrrd,格式也是[depth,h,w]，每一个具体的点上的值就是该像素属于的类别
-因为恒为512张,patch_depth 必须能够被512整除
+因为恒为512张,patch_depth 必须能够被512整除,同时考虑到UNet里面的Concat层，导致w必须是8的倍数才能，
+所以要resize一些不合规的图片
 """
 import numpy as np
 import os
@@ -66,7 +67,7 @@ class DataGenerator(object):
                         count+=1
                         if count>=batch_size:
                             x,y=np.array(x),np.array(y)
-                            # print(x.shape,y.shape)
+                            print(x.shape,y.shape)
                             yield x,y
                             count=0
                             x=[]
