@@ -81,7 +81,7 @@ class UNet(object):
 
 if __name__=="__main__":
     m=UNet(
-        input_shape=(64,512,512,1),
+        input_shape=(512, 512, 77, 1),
         label_numbel=5
     )
     m.model()
