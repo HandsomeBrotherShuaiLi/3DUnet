@@ -1,7 +1,11 @@
 from keras.engine import Input,Model
 from keras.layers import Conv3D,MaxPooling3D,UpSampling3D,Activation
-from keras.layers import BatchNormalization,PReLU,Deconvolution3D
+from keras.layers import BatchNormalization,Deconvolution3D
 from keras.layers.merge import concatenate
+from model.data_generator import DataGenerator
+from keras.optimizers import Adam,SGD
+from keras.callbacks import TensorBoard,ReduceLROnPlateau,EarlyStopping,ModelCheckpoint
+import os
 """
 3D U-Net,注意3D卷积的输入tensor维度!!!! 后面再做GAN
 (batch, conv_dim1, conv_dim2, conv_dim3, channels)
@@ -11,7 +15,7 @@ tf.nn.
 reference: https://www.tensorflow.org/api_docs/python/tf/layers/Conv3D
 """
 class UNet(object):
-    def __init__(self,input_shape,label_numbel,depth=4,n_base_filters=32,
+    def __init__(self,input_shape,label_numbel=5,depth=4,n_base_filters=32,
                  batch_normalization=True,deconvolution=False,pool_size=(2,2,2)):
         self.input_shape=input_shape
         self.label_number=label_numbel
@@ -78,13 +82,41 @@ class UNet(object):
         model=Model(input_layer,prediction)
         model.summary()
         return model
-
+    def train(self,img_dir,train_bs=1,val_bs=1,opt='adam',augment=False,split_rate=0.1,lr=1e-3,model_folder='D:\py_projects\\3DUnet\models'):
+        d=DataGenerator(img_dir=img_dir,train_bs=train_bs,val_bs=val_bs,patch_depth=self.input_shape[0],
+                                 shape=None if self.input_shape[1:]==(None,None,1) else self.input_shape[1:],
+                                 labels=self.label_number,split_rate=split_rate,augment=augment)
+        d.split()
+        train_steps_per_epoch,vaild_steps=d.steps_per_epoch,d.vaild_steps
+        print(train_steps_per_epoch,vaild_steps)
+        model=self.model()
+        model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
+                      loss='categorical_crossentropy',metrics=['acc'])
+        his=model.fit_generator(
+            generator=d.generator(valid=False),
+            steps_per_epoch=train_steps_per_epoch,
+            validation_data=d.generator(valid=True),
+            validation_steps=vaild_steps,
+            verbose=1,
+            initial_epoch=0,
+            epochs=100,
+            callbacks=[
+                TensorBoard('log',update_freq='batch'),
+                EarlyStopping(monitor='val_acc',min_delta=0.00001,patience=20,mode='max',verbose=1),
+                ReduceLROnPlateau(monitor='val_acc',min_delta=1e-5,patience=5,mode='max',verbose=1,factor=0.1),
+                ModelCheckpoint(filepath=os.path.join(model_folder,'3D-UNet--{epoch:02d}--{val_loss:.5f}--{val_acc:.5f}.h5'),
+                                monitor='val_acc',verbose=1,save_weights_only=False,save_best_only=True,period=1)
+            ]
+        )
+        print(his.history)
 if __name__=="__main__":
     m=UNet(
-        input_shape=(512, 512, 77, 1),
+        input_shape=(16, None, None, 1),
         label_numbel=5
     )
-    m.model()
+    m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
+            model_folder='D:\py_projects\3DUnet\models'
+            )
 
 
 

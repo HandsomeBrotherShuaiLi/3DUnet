@@ -3,3 +3,4 @@
 本脚本集成训练，预测
 """
 from model.UNet import UNet
+from model.data_generator import DataGenerator

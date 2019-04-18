@@ -21,7 +21,6 @@ class DataGenerator(object):
         self.augment=augment
         self.total_slices = 512 * len(os.listdir(self.img_dir))
         self.labels=labels
-        self.split()
 
     def split(self):
         self.patch_number=int(self.total_slices/self.patch_depth)
@@ -30,6 +29,8 @@ class DataGenerator(object):
         val_len=int(self.split_rate*len(all_index))
         self.val_index=np.random.choice(all_index,size=val_len,replace=False)
         self.train_index=np.array([i for i in all_index if i not in self.val_index])
+        self.steps_per_epoch=len(self.train_index)//self.train_bs
+        self.vaild_steps=len(self.val_index)//self.val_bs
         print('val len: {}, train len: {}  patch number:{}'.format(len(self.val_index),len(self.train_index),
                                                                    len(self.val_index)+ len(self.train_index)))
 
