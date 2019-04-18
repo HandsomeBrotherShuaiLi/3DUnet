@@ -123,12 +123,12 @@ class UNet(object):
         print(his.history)
 if __name__=="__main__":
     m=UNet(
-        input_shape=(16, 512, 16, 1),
+        input_shape=(16, 512,368,1),
         label_numbel=5
     )
     m.model()
     # m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
-    #         model_folder='D:\py_projects\3DUnet\models'
+    #         model_folder='D:\py_projects\\3DUnet\models'
     #         )
 
 

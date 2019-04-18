@@ -11,6 +11,7 @@ class data_loader(object):
     def __init__(self,data_dir):
         self.dir=data_dir
     def process(self,mode=2):
+        res=[]
         for i in os.listdir(self.dir):
             path=os.path.join(self.dir,i)
             """
@@ -26,7 +27,13 @@ class data_loader(object):
                 3: [0, 0, 255],
                 4: [255, 255, 0]
             }
-            print(original_pictures.shape, labels.shape)
+            print(original_pictures.shape)
+            res.append(original_pictures.shape[-1])
+            for n in range(original_pictures.shape[0]):
+                for h in range(original_pictures.shape[1]):
+                    for w in range(original_pictures.shape[2]):
+                        if labels[n][h][w]==0:
+                            print(original_pictures[n][h][w])
             # print(original_pictures[0,0,0])
             # original_pictures=np.expand_dims(original_pictures,axis=-1)
             # print(original_pictures.shape)
@@ -61,6 +68,7 @@ class data_loader(object):
             #         mask_img = Image.fromarray(mask)
             #         mask_img.show()
             #         time.sleep(3)
+        print(max(res),min(res))
 
 if __name__=='__main__':
     dir='C:\\Users\chris.li2\\3D_medical'
