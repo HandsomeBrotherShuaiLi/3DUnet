@@ -130,7 +130,7 @@ class UNet(object):
         model=self.model()
         model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
                       # loss='categorical_crossentropy',
-                      loss=weighted_categorical_crossentropy([f1/(f1+f2+f3+f4),f2/(f1+f2+f3+f4),f3/(f1+f2+f3+f4),f3/(f1+f2+f3+f4)]).loss,
+                      loss=weighted_categorical_crossentropy([f1/(f1+f2+f3+f4),f2/(f1+f2+f3+f4),f3/(f1+f2+f3+f4),f4/(f1+f2+f3+f4)]).loss,
                       metrics=['acc'])
         his=model.fit_generator(
             generator=d.generator_v2(valid=False),
