@@ -5,12 +5,14 @@ data generator(with and without augment)
 原始的图片是vol.nrrd，格式是[depth,h,w]
 标注的信息是label.nrrd,格式也是[depth,h,w]，每一个具体的点上的值就是该像素属于的类别
 因为恒为512张,patch_depth 必须能够被512整除
+发现 1*8*512*512的内存不够，1*4*512*512 pooling operation 不行
+考虑修改 shape
 """
 import numpy as np
 import os
 import nrrd
 class DataGenerator(object):
-    def __init__(self,img_dir,train_bs=1,val_bs=1,patch_depth=8,shape=None,
+    def __init__(self,img_dir,train_bs=1,val_bs=1,patch_depth=8,factor=4,shape=None,
                  split_rate=0.1,augment=False,labels=5):
         self.img_dir=img_dir
         self.train_bs=1 if shape==None else train_bs
@@ -21,6 +23,7 @@ class DataGenerator(object):
         self.augment=augment
         self.total_slices = 512 * len(os.listdir(self.img_dir))
         self.labels=labels
+        self.factor=factor
 
     def split(self):
         self.patch_number=int(self.total_slices/self.patch_depth)
@@ -95,21 +98,22 @@ class DataGenerator(object):
                     patch_x=np.expand_dims(patch_x,axis=-1)
                     shape=patch_y.shape
                     patch_y = np.eye(self.labels)[patch_y.reshape(-1)].reshape((shape[0],shape[1],shape[2],self.labels))
-                    x.append(patch_x)
-                    y.append(patch_y)
+                    #4,512,512,1   4 512 512 5
+                    # x.append(patch_x)
+                    # y.append(patch_y)
+                    delta=shape[1]//self.factor
+                    for h in range(self.factor):
+                        for w in range(self.factor):
+                            x.append(patch_x[:,h*delta:(h+1)*delta,w*delta:(w+1)*delta,:])
+                            y.append(patch_y[:, h * delta:(h + 1) * delta, w*delta:(w + 1) * delta, :])
                     count+=1
                     if count>=batch_size:
                         x, y = np.array(x), np.array(y)
-                        # print(x.shape, y.shape)
+                        print(x.shape, y.shape)
                         yield x, y
                         count = 0
                         x = []
                         y = []
-                    # for n in range(t[0]):
-                    #     for h in range(t[1]):
-                    #         for w in range(t[2]):
-                    #             if [patch_y[n,h,w,0],patch_y[n,h,w,1],patch_y[n,h,w,2],patch_y[n,h,w,3],patch_y[n,h,w,4]]!=[1,0,0,0,0]:
-                    #                 print([patch_y[n,h,w,0],patch_y[n,h,w,1],patch_y[n,h,w,2],patch_y[n,h,w,3],patch_y[n,h,w,4]])
         else:
             """
             数据增强函数

@@ -82,7 +82,7 @@ class UNet(object):
         model=Model(input_layer,prediction)
         model.summary()
         return model
-    def train(self,img_dir,train_bs=1,val_bs=1,opt='adam',augment=False,split_rate=0.1,lr=1e-3,model_folder='D:\py_projects\\3DUnet\models'):
+    def train(self,img_dir,train_bs=1,val_bs=1,opt='adam',augment=False,split_rate=0.1,lr=1e-3,model_folder='D:\py_projects\\3DUnet\models',factor=4):
         """
         还是要reshape的，主要是concat 那里不方便
         :param img_dir:
@@ -97,7 +97,7 @@ class UNet(object):
         """
         d=DataGenerator(img_dir=img_dir,train_bs=train_bs,val_bs=val_bs,patch_depth=self.input_shape[0],
                                  shape=None if self.input_shape[1:]==(None,None,1) else self.input_shape[1:],
-                                 labels=self.label_number,split_rate=split_rate,augment=augment)
+                                 labels=self.label_number,split_rate=split_rate,augment=augment,factor=factor)
         d.split_v2()
         train_steps_per_epoch,vaild_steps=d.steps_per_epoch,d.valid_steps
         print(train_steps_per_epoch,vaild_steps)
@@ -123,7 +123,7 @@ class UNet(object):
         print(his.history)
 if __name__=="__main__":
     m=UNet(
-        input_shape=(16, 512,368,1),
+        input_shape=(8, None,None,1),
         label_numbel=5
     )
     m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
