@@ -6,6 +6,8 @@ from model.data_generator import DataGenerator
 from keras.optimizers import Adam,SGD
 from keras.callbacks import TensorBoard,ReduceLROnPlateau,EarlyStopping,ModelCheckpoint
 import os
+from keras import backend as K
+from keras.metrics import categorical_accuracy
 """
 3D U-Net,注意3D卷积的输入tensor维度!!!! 后面再做GAN
 (batch, conv_dim1, conv_dim2, conv_dim3, channels)
@@ -14,6 +16,31 @@ tf.nn.
 (batch, depth, height, width, channels)
 reference: https://www.tensorflow.org/api_docs/python/tf/layers/Conv3D
 """
+class weighted_categorical_crossentropy(object):
+    """
+    A weighted version of keras.objectives.categorical_crossentropy
+
+    Variables:
+        weights: numpy array of shape (C,) where C is the number of classes
+
+    Usage:
+        loss = weighted_categorical_crossentropy(weights).loss
+        model.compile(loss=loss,optimizer='adam')
+    """
+
+    def __init__(self, weights):
+        self.weights = K.variable(weights)
+
+    def loss(self, y_true, y_pred):
+        # scale preds so that the class probas of each sample sum to 1
+        y_pred /= K.sum(y_pred,axis=-1, keepdims=True)
+        # clip
+        y_pred = K.clip(y_pred, K.epsilon(), 1)
+        # calc
+        loss = y_true * K.log(y_pred) * self.weights
+        loss = -K.sum(loss, -1)
+        return loss
+
 class UNet(object):
     def __init__(self,input_shape,label_numbel=5,depth=4,n_base_filters=32,
                  batch_normalization=True,deconvolution=False,pool_size=(2,2,2)):
@@ -103,7 +130,9 @@ class UNet(object):
         print(train_steps_per_epoch,vaild_steps)
         model=self.model()
         model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
-                      loss='categorical_crossentropy',metrics=['acc'])
+                      # loss='categorical_crossentropy',
+                      loss=weighted_categorical_crossentropy([1,100,100,100]).loss,
+                      metrics=['acc'])
         his=model.fit_generator(
             generator=d.generator_v2(valid=False),
             steps_per_epoch=train_steps_per_epoch,
@@ -114,8 +143,8 @@ class UNet(object):
             epochs=100,
             callbacks=[
                 TensorBoard('log',update_freq='batch'),
-                EarlyStopping(monitor='val_acc',min_delta=0.00001,patience=20,mode='max',verbose=1),
-                ReduceLROnPlateau(monitor='val_acc',min_delta=1e-5,patience=5,mode='max',verbose=1,factor=0.1),
+                EarlyStopping(monitor='val_loss',min_delta=0.00001,patience=20,verbose=1),
+                ReduceLROnPlateau(monitor='val_loss',min_delta=1e-4,patience=5,verbose=1,factor=0.5),
                 ModelCheckpoint(filepath=os.path.join(model_folder,'3D-UNet--{epoch:02d}--{val_loss:.5f}--{val_acc:.5f}.h5'),
                                 monitor='val_acc',verbose=1,save_weights_only=False,save_best_only=True,period=1)
             ]
@@ -124,12 +153,12 @@ class UNet(object):
 if __name__=="__main__":
     m=UNet(
         input_shape=(8, None,None,1),
-        label_numbel=5
+        label_numbel=4
     )
     m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
             model_folder='D:\py_projects\\3DUnet\models',
             factor=4,
-            train_bs=4,
+            train_bs=2,
             val_bs=4
             )
 

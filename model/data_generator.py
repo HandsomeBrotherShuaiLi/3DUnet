@@ -79,6 +79,7 @@ class DataGenerator(object):
                     labels,_=nrrd.read(os.path.join(folder_path,'Segmentation-label.nrrd'))
                     original_imgs=np.array([original_imgs[:,:,i] for i in range(original_imgs.shape[-1])])
                     labels=np.array([labels[:,:,i] for i in range(labels.shape[-1])])
+                    #标签的顺序应该是background=0, nerve=1, bone=2, vessel=3（如果有vessel）, disc=4, vessel 改成bg0, disc改成3
                     #切割
                     if (patch_id+1)*self.patch_depth<=original_imgs.shape[0]:
                         patch_x=original_imgs[patch_id*self.patch_depth:(patch_id+1)*self.patch_depth,:,:]
@@ -96,6 +97,9 @@ class DataGenerator(object):
                     # print(patch_x.shape,patch_y.shape)
                     # print(patch_y[-1,:,:])
                     patch_x=np.expand_dims(patch_x,axis=-1)
+                    patch_y[np.where(patch_y==3)]=0
+                    patch_y[np.where(patch_y==4)]=3
+                    print(np.unique(patch_y))
                     shape=patch_y.shape
                     patch_y = np.eye(self.labels)[patch_y.reshape(-1)].reshape((shape[0],shape[1],shape[2],self.labels))
                     #4,512,512,1   4 512 512 5

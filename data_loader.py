@@ -17,69 +17,22 @@ class data_loader(object):
                                用不同颜色显示实例分割情况,得出的结论是：
                                label是这样的格式：[h,w,depth]
                                """
-            original_pictures, nrrd_options = nrrd.read(os.path.join(path, 'CT-vol.nrrd'))
+            # original_pictures, nrrd_options = nrrd.read(os.path.join(path, 'CT-vol.nrrd'))
             labels, _ = nrrd.read(os.path.join(path, 'Segmentation-label.nrrd'))
-            map = {
-                0: [0, 0, 0],
-                1: [255, 0, 0],
-                2: [0, 255, 255],
-                3: [0, 0, 255],
-                4: [255, 255, 0]
-            }
-            print(original_pictures.shape)
-            # res.append(original_pictures.shape[-1])
-            for n in range(original_pictures.shape[2]):
-                new_img=Image.new(mode='RGB',size=(original_pictures.shape[1],original_pictures.shape[0]))
-                mask=np.array(new_img)
-                label_temp=labels[:,:,n]
-                label_temp=np.eye(5)[label_temp.reshape(-1)].reshape((512,512,5))
-                flag=False
-
-                for h in range(original_pictures.shape[0]):
-                    for w in range(original_pictures.shape[1]):
-                        mask[h,w,:]=map[labels[h,w,n]]
-                        if labels[h,w,n] in [1,2,3,4]:
-                            flag=True
-                            print(labels[h,w,n],[label_temp[h,w,0],label_temp[h,w,1],label_temp[h,w,2],label_temp[h,w,3],label_temp[h,w,4]])
-                if flag:
-                    im = Image.fromarray(mask)
-                    im.show()
-            # print(original_pictures[0,0,0])
-            # original_pictures=np.expand_dims(original_pictures,axis=-1)
-            # print(original_pictures.shape)
-            # t=original_pictures[0,0,0,:]
-            # print(t)
-            # i=0
-            # print(original_pictures[i, :, :].shape)
-            # single_img = Image.fromarray(original_pictures[i, :, :])
-            # single_img.show()
-            # w, h = single_img.size
-            # print(np.unique(labels[i, :, :]))
-            # mask = Image.new('RGB', size=(w, h))
-            # mask = np.array(mask)
-            # for x in range(h):
-            #     for y in range(w):
-            #         mask[x, y, :] = map[labels[i, x, y]]
-            # mask_img = Image.fromarray(mask)
-            # mask_img.show()
-            # time.sleep(3)
-            # for i in range(original_pictures.shape[0]):
-            #     shape = original_pictures[i, :, :].shape
-            #     print(shape)
-            #     mask = Image.new('RGB', size=(shape[1], shape[0]))
-            #     mask = np.array(mask)
-            #     flag = False
-            #     for x in range(shape[0]):
-            #         for y in range(shape[1]):
-            #             mask[x, y, :] = map[labels[i, x, y]]
-            #             if labels[i, x, y] in [1, 3, 4]:
-            #                 flag = True
-            #     if flag:
-            #         mask_img = Image.fromarray(mask)
-            #         mask_img.show()
-            #         time.sleep(3)
-
-
+            # for j in _:
+            #     print(j,_[j])
+            # map = {
+            #     0: [0, 0, 0],
+            #     1: [255, 0, 0],
+            #     2: [0, 255, 255],
+            #     3: [0, 0, 255],
+            #     4: [255, 255, 0]
+            # }
+            print('before',np.unique(labels))
+            labels[np.where(labels==3)]=0
+            labels[np.where(labels==4)]=3
+            t1,t2,t3,t4=np.where(labels==0),np.where(labels==1),np.where(labels==2),np.where(labels==3)
+            print(labels[t1].size,labels[t2].size,labels[t3].size,labels[t4].size,(labels[t1].size+labels[t2].size+labels[t3].size+labels[t4].size)==labels.size)
 if __name__=='__main__':
     dir='C:\\Users\chris.li2\\3D_medical'
     d=data_loader(dir)
