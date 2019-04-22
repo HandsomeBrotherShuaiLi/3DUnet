@@ -40,11 +40,28 @@ class DataGenerator(object):
         self.folder_mapping=[]
         self.folder_dict={}
         i=0
+        l1,l2,l3,l4=0,0,0,0
         for folder in os.listdir(self.img_dir):
             t=os.path.join(self.img_dir,folder)
             original_imgs,_=nrrd.read(os.path.join(t,'CT-vol.nrrd'))
+            labels,_=nrrd.read(os.path.join(t,'Segmentation-label.nrrd'))
+            labels[np.where(labels == 3)] = 0
+            labels[np.where(labels == 4)] = 3
+            t1, t2, t3, t4 = np.where(labels == 0), np.where(labels == 1), np.where(labels == 2), np.where(labels == 3)
+            l1+=labels[t1].size
+            l2+=labels[t2].size
+            l3+=labels[t3].size
+            l4+=labels[t4].size
             self.folder_mapping.append(original_imgs.shape[-1])
             self.folder_dict[i]=original_imgs.shape[-1]//self.patch_depth if original_imgs.shape[-1]%self.patch_depth==0 else original_imgs.shape[-1]//self.patch_depth+1
+            if original_imgs.shape[-1]%self.patch_depth!=0:
+                ex=original_imgs.shape[-1]%self.patch_depth
+                ex=self.patch_depth-ex
+                temp=labels[:,:,-1]
+                l1 += ex*temp[np.where(temp==0)].size
+                l2 += ex*temp[np.where(temp==1)].size
+                l3 += ex*temp[np.where(temp==2)].size
+                l4 += ex*temp[np.where(temp==3)].size
             i+=1
         self.all_patch_number=sum(self.folder_dict.values())
         self.all_index=np.array(range(self.all_patch_number))
@@ -55,6 +72,8 @@ class DataGenerator(object):
         self.valid_steps=len(self.val_index)*self.factor*self.factor//self.val_bs
         print('val len: {}, train len: {}  all patch number:{}'.format(len(self.val_index), len(self.train_index),
                                                                    len(self.val_index) + len(self.train_index)))
+        l=l1+l2+l3+l4
+        return l/l1,l/l2,l/l3,l/l4
     def find_folder_and_patch_id(self,pid):
         res=0
         for i in self.folder_dict:
@@ -94,8 +113,6 @@ class DataGenerator(object):
                         patch_y=labels[patch_id*self.patch_depth:,:,:]
                         patch_x = np.append(patch_x, ex*[original_imgs[-1, :, :]], axis=0)
                         patch_y = np.append(patch_y, ex*[labels[-1, :, :]], axis=0)
-                    # print(patch_x.shape,patch_y.shape)
-                    # print(patch_y[-1,:,:])
                     patch_x=np.expand_dims(patch_x,axis=-1)
                     patch_y[np.where(patch_y==3)]=0
                     patch_y[np.where(patch_y==4)]=3
@@ -118,14 +135,6 @@ class DataGenerator(object):
                                 count = 0
                                 x = []
                                 y = []
-                    # count+=self.factor*self.factor
-                    # if count>=batch_size:
-                    #     x, y = np.array(x), np.array(y)
-                    #     print(x.shape, y.shape)
-                    #     yield x, y
-                    #     count = 0
-                    #     x = []
-                    #     y = []
         else:
             """
             数据增强函数
@@ -179,15 +188,6 @@ class DataGenerator(object):
             """
             pass
 if __name__=='__main__':
-    # a=np.random.randint(0,100,(512,512,24))
-    # print(a[:,:,20:24])
-    # print(a[:,:,20:23].shape)
-    # t1=a[:,:,-1]
-    # res=np.array([a[:,:,i] for i in range(a.shape[-1])])
-    # res2=a.swapaxes(0,2)
-    # print(res.shape,res2.shape)
-    # print(res[-1,:,:]==t1)
-    # print(res2[0,:,:]==t1)
     d=DataGenerator('C:\\Users\chris.li2\\3D_medical')
     d.split_v2()
     d.generator_v2()

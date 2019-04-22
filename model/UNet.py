@@ -7,7 +7,6 @@ from keras.optimizers import Adam,SGD
 from keras.callbacks import TensorBoard,ReduceLROnPlateau,EarlyStopping,ModelCheckpoint
 import os
 from keras import backend as K
-from keras.metrics import categorical_accuracy
 """
 3D U-Net,注意3D卷积的输入tensor维度!!!! 后面再做GAN
 (batch, conv_dim1, conv_dim2, conv_dim3, channels)
@@ -125,13 +124,13 @@ class UNet(object):
         d=DataGenerator(img_dir=img_dir,train_bs=train_bs,val_bs=val_bs,patch_depth=self.input_shape[0],
                                  shape=None if self.input_shape[1:]==(None,None,1) else self.input_shape[1:],
                                  labels=self.label_number,split_rate=split_rate,augment=augment,factor=factor)
-        d.split_v2()
+        f1,f2,f3,f4=d.split_v2()
         train_steps_per_epoch,vaild_steps=d.steps_per_epoch,d.valid_steps
         print(train_steps_per_epoch,vaild_steps)
         model=self.model()
         model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
                       # loss='categorical_crossentropy',
-                      loss=weighted_categorical_crossentropy([1,100,100,100]).loss,
+                      loss=weighted_categorical_crossentropy([f1/(f1+f2+f3+f4),f2/(f1+f2+f3+f4),f3/(f1+f2+f3+f4),f3/(f1+f2+f3+f4)]).loss,
                       metrics=['acc'])
         his=model.fit_generator(
             generator=d.generator_v2(valid=False),

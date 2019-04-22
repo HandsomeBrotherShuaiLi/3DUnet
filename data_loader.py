@@ -34,7 +34,12 @@ class data_loader(object):
             t1,t2,t3,t4=np.where(labels==0),np.where(labels==1),np.where(labels==2),np.where(labels==3)
             print(labels[t1].size,labels[t2].size,labels[t3].size,labels[t4].size,(labels[t1].size+labels[t2].size+labels[t3].size+labels[t4].size)==labels.size)
 if __name__=='__main__':
-    dir='C:\\Users\chris.li2\\3D_medical'
-    d=data_loader(dir)
-    d.process()
+    # dir='C:\\Users\chris.li2\\3D_medical'
+    # d=data_loader(dir)
+    # d.process()
+    a=[0.9693270101175679,0.0024103276141278157,0.02598401973773907,0.002278642530565138]
+    t=[1/i for i in a]
+    b=sum(t)
+    res=[i/b for i in t]
+    print(t,res)
 
