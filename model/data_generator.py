@@ -12,10 +12,10 @@ import numpy as np
 import os
 import nrrd
 class DataGenerator(object):
-    def __init__(self,img_dir,train_bs=1,val_bs=1,patch_depth=8,factor=4,shape=None,
+    def __init__(self,img_dir,train_bs=4,val_bs=1,patch_depth=8,factor=4,shape=None,
                  split_rate=0.1,augment=False,labels=5):
         self.img_dir=img_dir
-        self.train_bs=1 if shape==None else train_bs
+        self.train_bs=train_bs
         self.val_bs=val_bs
         self.shape=shape
         self.patch_depth=patch_depth
@@ -51,8 +51,8 @@ class DataGenerator(object):
         val_len=int(self.split_rate*len(self.all_index))
         self.val_index=np.random.choice(self.all_index,size=val_len,replace=False)
         self.train_index=np.array([i for i in self.all_index if i not in self.val_index])
-        self.steps_per_epoch=len(self.train_index)//self.train_bs
-        self.valid_steps=len(self.val_index)//self.val_bs
+        self.steps_per_epoch=len(self.train_index)*self.factor*self.factor//self.train_bs
+        self.valid_steps=len(self.val_index)*self.factor*self.factor//self.val_bs
         print('val len: {}, train len: {}  all patch number:{}'.format(len(self.val_index), len(self.train_index),
                                                                    len(self.val_index) + len(self.train_index)))
     def find_folder_and_patch_id(self,pid):
@@ -73,7 +73,7 @@ class DataGenerator(object):
                 np.random.shuffle(index)
                 for i in index:
                     folder_id, patch_id = self.find_folder_and_patch_id(i)
-                    patch_id=self.folder_dict[folder_id]-1
+                    # patch_id=self.folder_dict[folder_id]-1
                     folder_path=os.path.join(self.img_dir,os.listdir(self.img_dir)[folder_id])
                     original_imgs,_=nrrd.read(os.path.join(folder_path,'CT-vol.nrrd'))
                     labels,_=nrrd.read(os.path.join(folder_path,'Segmentation-label.nrrd'))
@@ -106,14 +106,22 @@ class DataGenerator(object):
                         for w in range(self.factor):
                             x.append(patch_x[:,h*delta:(h+1)*delta,w*delta:(w+1)*delta,:])
                             y.append(patch_y[:, h * delta:(h + 1) * delta, w*delta:(w + 1) * delta, :])
-                    count+=1
-                    if count>=batch_size:
-                        x, y = np.array(x), np.array(y)
-                        print(x.shape, y.shape)
-                        yield x, y
-                        count = 0
-                        x = []
-                        y = []
+                            count+=1
+                            if count >= batch_size:
+                                x, y = np.array(x), np.array(y)
+                                # print(x.shape, y.shape)
+                                yield x, y
+                                count = 0
+                                x = []
+                                y = []
+                    # count+=self.factor*self.factor
+                    # if count>=batch_size:
+                    #     x, y = np.array(x), np.array(y)
+                    #     print(x.shape, y.shape)
+                    #     yield x, y
+                    #     count = 0
+                    #     x = []
+                    #     y = []
         else:
             """
             数据增强函数

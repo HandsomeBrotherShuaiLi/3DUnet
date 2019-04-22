@@ -127,7 +127,10 @@ if __name__=="__main__":
         label_numbel=5
     )
     m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
-            model_folder='D:\py_projects\\3DUnet\models'
+            model_folder='D:\py_projects\\3DUnet\models',
+            factor=4,
+            train_bs=4,
+            val_bs=4
             )
 
 
