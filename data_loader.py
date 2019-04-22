@@ -31,18 +31,19 @@ class data_loader(object):
             for n in range(original_pictures.shape[2]):
                 new_img=Image.new(mode='RGB',size=(original_pictures.shape[1],original_pictures.shape[0]))
                 mask=np.array(new_img)
+                label_temp=labels[:,:,n]
+                label_temp=np.eye(5)[label_temp.reshape(-1)].reshape((512,512,5))
                 flag=False
+
                 for h in range(original_pictures.shape[0]):
                     for w in range(original_pictures.shape[1]):
                         mask[h,w,:]=map[labels[h,w,n]]
                         if labels[h,w,n] in [1,2,3,4]:
                             flag=True
+                            print(labels[h,w,n],[label_temp[h,w,0],label_temp[h,w,1],label_temp[h,w,2],label_temp[h,w,3],label_temp[h,w,4]])
                 if flag:
                     im = Image.fromarray(mask)
                     im.show()
-
-
-
             # print(original_pictures[0,0,0])
             # original_pictures=np.expand_dims(original_pictures,axis=-1)
             # print(original_pictures.shape)

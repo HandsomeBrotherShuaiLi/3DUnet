@@ -98,16 +98,16 @@ class UNet(object):
         d=DataGenerator(img_dir=img_dir,train_bs=train_bs,val_bs=val_bs,patch_depth=self.input_shape[0],
                                  shape=None if self.input_shape[1:]==(None,None,1) else self.input_shape[1:],
                                  labels=self.label_number,split_rate=split_rate,augment=augment)
-        d.split()
-        train_steps_per_epoch,vaild_steps=d.steps_per_epoch,d.vaild_steps
+        d.split_v2()
+        train_steps_per_epoch,vaild_steps=d.steps_per_epoch,d.valid_steps
         print(train_steps_per_epoch,vaild_steps)
         model=self.model()
         model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
                       loss='categorical_crossentropy',metrics=['acc'])
         his=model.fit_generator(
-            generator=d.generator(valid=False),
+            generator=d.generator_v2(valid=False),
             steps_per_epoch=train_steps_per_epoch,
-            validation_data=d.generator(valid=True),
+            validation_data=d.generator_v2(valid=True),
             validation_steps=vaild_steps,
             verbose=1,
             initial_epoch=0,
@@ -126,10 +126,9 @@ if __name__=="__main__":
         input_shape=(16, 512,368,1),
         label_numbel=5
     )
-    m.model()
-    # m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
-    #         model_folder='D:\py_projects\\3DUnet\models'
-    #         )
+    m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
+            model_folder='D:\py_projects\\3DUnet\models'
+            )
 
 
 
