@@ -69,9 +69,9 @@ class DataGenerator(object):
         self.val_index=np.random.choice(self.all_index,size=val_len,replace=False)
         self.train_index=np.array([i for i in self.all_index if i not in self.val_index])
         with open('train.txt','w',encoding='utf-8') as f:
-            f.write('\n'.join(self.train_index))
+            f.write('\n'.join([str(i) for i in self.train_index]))
         with open('val.txt', 'w', encoding='utf-8') as f:
-            f.write('\n'.join(self.val_index))
+            f.write('\n'.join([str(i) for i in self.val_index]))
         self.steps_per_epoch=len(self.train_index)*self.factor*self.factor//self.train_bs
         self.valid_steps=len(self.val_index)*self.factor*self.factor//self.val_bs
         print('val len: {}, train len: {}  all patch number:{}'.format(len(self.val_index), len(self.train_index),
