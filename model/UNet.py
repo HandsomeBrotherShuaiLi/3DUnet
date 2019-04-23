@@ -7,6 +7,7 @@ from keras.optimizers import Adam,SGD
 from keras.callbacks import TensorBoard,ReduceLROnPlateau,EarlyStopping,ModelCheckpoint
 import os
 from keras import backend as K
+from model.loss import loss_metrics
 """
 3D U-Net,注意3D卷积的输入tensor维度!!!! 后面再做GAN
 (batch, conv_dim1, conv_dim2, conv_dim3, channels)
@@ -131,10 +132,13 @@ class UNet(object):
         train_steps_per_epoch,vaild_steps=d.steps_per_epoch,d.valid_steps
         print(train_steps_per_epoch,vaild_steps)
         model=self.model()
+        metrics_list=[loss_metrics.get_label_wise_crossentropy_acc(index) for index in range(self.label_number)]
+        metrics_list.append('acc')
+        dice_loss=loss_metrics.dice_coef_loss
         model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
                       # loss='categorical_crossentropy',
                       loss=weighted_categorical_crossentropy([f1,f2,f3,f4]).loss,
-                      metrics=['acc',top_k_categorical_accuracy])
+                      metrics=metrics_list)
         his=model.fit_generator(
             generator=d.generator_v2(valid=False),
             steps_per_epoch=train_steps_per_epoch,
