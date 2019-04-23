@@ -132,7 +132,7 @@ class UNet(object):
         train_steps_per_epoch,vaild_steps=d.steps_per_epoch,d.valid_steps
         print(train_steps_per_epoch,vaild_steps)
         model=self.model()
-        metrics_list=[loss_metrics.get_label_wise_crossentropy_acc(index) for index in range(self.label_number)]
+        metrics_list=[loss_metrics.get_label_wise_crossentropy_acc(label_index=index) for index in range(self.label_number)]
         metrics_list.append('acc')
         dice_loss=loss_metrics.dice_coef_loss
         model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
