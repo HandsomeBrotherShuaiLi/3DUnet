@@ -15,6 +15,9 @@ tf.nn.
 (batch, depth, height, width, channels)
 reference: https://www.tensorflow.org/api_docs/python/tf/layers/Conv3D
 """
+def top_k_categorical_accuracy(y_true, y_pred, k=4):
+    return K.mean(K.in_top_k(y_pred, K.argmax(y_true, axis=-1), k), axis=-1)
+
 class weighted_categorical_crossentropy(object):
     """
     A weighted version of keras.objectives.categorical_crossentropy
@@ -130,8 +133,8 @@ class UNet(object):
         model=self.model()
         model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
                       # loss='categorical_crossentropy',
-                      loss=weighted_categorical_crossentropy([f1/(f1+f2+f3+f4),f2/(f1+f2+f3+f4),f3/(f1+f2+f3+f4),f4/(f1+f2+f3+f4)]).loss,
-                      metrics=['acc'])
+                      loss=weighted_categorical_crossentropy([f1,f2,f3,f4]).loss,
+                      metrics=['acc',top_k_categorical_accuracy])
         his=model.fit_generator(
             generator=d.generator_v2(valid=False),
             steps_per_epoch=train_steps_per_epoch,
@@ -144,8 +147,8 @@ class UNet(object):
                 TensorBoard('log',update_freq='batch'),
                 EarlyStopping(monitor='val_loss',min_delta=0.00001,patience=20,verbose=1),
                 ReduceLROnPlateau(monitor='val_loss',min_delta=1e-4,patience=5,verbose=1,factor=0.5),
-                ModelCheckpoint(filepath=os.path.join(model_folder,'3D-UNet--{epoch:02d}--{val_loss:.5f}--{val_acc:.5f}.h5'),
-                                monitor='val_acc',verbose=1,save_weights_only=False,save_best_only=True,period=1)
+                ModelCheckpoint(filepath=os.path.join(model_folder,'loss_lead_3D-UNet--{epoch:02d}--{val_loss:.5f}--{val_acc:.5f}.h5'),
+                                monitor='val_loss',verbose=1,save_weights_only=False,save_best_only=True,period=1)
             ]
         )
         print(his.history)

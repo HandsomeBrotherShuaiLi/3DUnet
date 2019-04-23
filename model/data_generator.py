@@ -68,6 +68,10 @@ class DataGenerator(object):
         val_len=int(self.split_rate*len(self.all_index))
         self.val_index=np.random.choice(self.all_index,size=val_len,replace=False)
         self.train_index=np.array([i for i in self.all_index if i not in self.val_index])
+        with open('train.txt','w',encoding='utf-8') as f:
+            f.write('\n'.join(self.train_index))
+        with open('val.txt', 'w', encoding='utf-8') as f:
+            f.write('\n'.join(self.val_index))
         self.steps_per_epoch=len(self.train_index)*self.factor*self.factor//self.train_bs
         self.valid_steps=len(self.val_index)*self.factor*self.factor//self.val_bs
         print('val len: {}, train len: {}  all patch number:{}'.format(len(self.val_index), len(self.train_index),
@@ -116,7 +120,7 @@ class DataGenerator(object):
                     patch_x=np.expand_dims(patch_x,axis=-1)
                     patch_y[np.where(patch_y==3)]=0
                     patch_y[np.where(patch_y==4)]=3
-                    print(np.unique(patch_y))
+                    # print(np.unique(patch_y))
                     shape=patch_y.shape
                     patch_y = np.eye(self.labels)[patch_y.reshape(-1)].reshape((shape[0],shape[1],shape[2],self.labels))
                     #4,512,512,1   4 512 512 5
@@ -172,7 +176,7 @@ class DataGenerator(object):
                         count+=1
                         if count>=batch_size:
                             x,y=np.array(x),np.array(y)
-                            print(x.shape,y.shape)
+                            # print(x.shape,y.shape)
                             yield x,y
                             count=0
                             x=[]
