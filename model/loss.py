@@ -41,7 +41,7 @@ class loss_metrics(object):
         return -self.dice_coef_loss(y_true[:,:,:,:,label_index],y_pred[:,:,:,:,label_index])
     def get_label_wise_dice_mertrics(self,label_index):
         f=partial(self.label_wise_dice_metrics,label_index=label_index)
-        f.__setattr__('__name__', 'label_{0}_dice_mertrics'.format(label_index))
+        f.__setattr__('__name__', 'label_{0}_dice_acc'.format(label_index))
         return f
     def softmax_entropy_acc(self,y_true,y_pred):
         return K.cast(K.equal(K.argmax(y_true, axis=-1),
@@ -51,13 +51,5 @@ class loss_metrics(object):
         return self.softmax_entropy_acc(y_true[:,:,:,:,label_index],y_pred[:,:,:,:,label_index])
     def get_label_wise_crossentropy_acc(self,label_index):
         f=partial(self.label_wise_softmax_entropy_acc,label_index=label_index)
-        f.__setattr__('__name__', 'label_{0}_crossentropy_mertrics'.format(label_index))
+        f.__setattr__('__name__', 'label_{0}_crossentropy_acc'.format(label_index))
         return f
-
-
-
-
-
-
-
-

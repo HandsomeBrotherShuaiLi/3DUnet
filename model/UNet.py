@@ -132,13 +132,19 @@ class UNet(object):
         train_steps_per_epoch,vaild_steps=d.steps_per_epoch,d.valid_steps
         print(train_steps_per_epoch,vaild_steps)
         model=self.model()
-        metrics_list=[loss_metrics.get_label_wise_crossentropy_acc(label_index=index) for index in range(self.label_number)]
+        lm=loss_metrics()
+        metrics_list=[lm.get_label_wise_crossentropy_acc(label_index=index) for index in range(self.label_number)]
         metrics_list.append('acc')
-        dice_loss=loss_metrics.dice_coef_loss
+        dice_acc_list=[lm.get_label_wise_dice_mertrics(label_index=index) for index in range(self.label_number)]
+        dice_acc_list.append('acc')
+        dice_loss=lm.dice_coef_loss
         model.compile(optimizer=Adam(1e-3) if opt=='adam' else SGD(lr=lr,momentum=0.9,nesterov=True),
                       # loss='categorical_crossentropy',
-                      loss=weighted_categorical_crossentropy([f1,f2,f3,f4]).loss,
-                      metrics=metrics_list)
+                      # loss=weighted_categorical_crossentropy([f1,f2,f3,f4]).loss,
+                      loss=dice_loss,
+                      # metrics=metrics_list
+                      metrics=dice_acc_list
+                      )
         his=model.fit_generator(
             generator=d.generator_v2(valid=False),
             steps_per_epoch=train_steps_per_epoch,
@@ -156,6 +162,14 @@ class UNet(object):
             ]
         )
         print(his.history)
+
+    def predict(self,test_img_dir,mode=1):
+        """
+        test and eval
+        :param test_img_dir:
+        :param mode:
+        :return:
+        """
 if __name__=="__main__":
     m=UNet(
         input_shape=(8, None,None,1),
