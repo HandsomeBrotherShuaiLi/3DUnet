@@ -19,6 +19,12 @@ class data_loader(object):
                                """
             # original_pictures, nrrd_options = nrrd.read(os.path.join(path, 'CT-vol.nrrd'))
             labels, _ = nrrd.read(os.path.join(path, 'Segmentation-label.nrrd'))
+            _,operations=nrrd.read(os.path.join(path, 'Segmentation.seg.nrrd'))
+            print(path)
+            print(labels.shape,np.unique(labels))
+            for j in operations:
+                if j.endswith('_ID') or j.endswith('Name'):
+                    print(j, operations[j])
             # for j in _:
             #     print(j,_[j])
             # map = {
@@ -28,18 +34,13 @@ class data_loader(object):
             #     3: [0, 0, 255],
             #     4: [255, 255, 0]
             # }
-            print('before',np.unique(labels))
-            labels[np.where(labels==3)]=0
-            labels[np.where(labels==4)]=3
-            t1,t2,t3,t4=np.where(labels==0),np.where(labels==1),np.where(labels==2),np.where(labels==3)
-            print(labels[t1].size,labels[t2].size,labels[t3].size,labels[t4].size,(labels[t1].size+labels[t2].size+labels[t3].size+labels[t4].size)==labels.size)
+            # print('before',np.unique(labels))
+            # labels[np.where(labels==3)]=0
+            # labels[np.where(labels==4)]=3
+            # t1,t2,t3,t4=np.where(labels==0),np.where(labels==1),np.where(labels==2),np.where(labels==3)
+            # print(labels[t1].size,labels[t2].size,labels[t3].size,labels[t4].size,(labels[t1].size+labels[t2].size+labels[t3].size+labels[t4].size)==labels.size)
 if __name__=='__main__':
-    # dir='C:\\Users\chris.li2\\3D_medical'
-    # d=data_loader(dir)
-    # d.process()
-    a=[0.9693270101175679,0.0024103276141278157,0.02598401973773907,0.002278642530565138]
-    t=[1/i for i in a]
-    b=sum(t)
-    res=[i/b for i in t]
-    print(t,res)
+    dir='C:\\Users\chris.li2\\3D_medical'
+    d=data_loader(dir)
+    d.process()
 

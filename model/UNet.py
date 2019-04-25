@@ -163,24 +163,40 @@ class UNet(object):
         )
         print(his.history)
 
-    def predict(self,test_img_dir,mode=1):
+    def predict(self,test_img_dir,predict_model_path,mode=1):
         """
-        test and eval
+        predict and eval
+        mode 1 ==> eval
+        mode 2 ==> predict
         :param test_img_dir:
+        :param predict_model_path:
         :param mode:
         :return:
         """
+        import numpy as np
+        import nrrd
+        for folder in os.listdir(test_img_dir):
+            original_imgs,_=nrrd.read(os.path.join(test_img_dir,folder,'CT-vol.nrrd'))
+            labels,_=nrrd.read(os.path.join(test_img_dir,folder,'Segmentation-label.nrrd'))
+            _, operations = nrrd.read(os.path.join(test_img_dir, folder, 'Segmentation.seg.nrrd'))
+            print(os.path.join(test_img_dir,folder))
+            print(original_imgs.shape,np.unique(labels))
+            for i in operations:
+                if i.endswith('_ID') or i.endswith('Name'):
+                    print(i, operations[i])
+
 if __name__=="__main__":
     m=UNet(
         input_shape=(8, None,None,1),
         label_numbel=4
     )
-    m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
-            model_folder='D:\py_projects\\3DUnet\models',
-            factor=4,
-            train_bs=2,
-            val_bs=4
-            )
+    # m.train(img_dir='C:\\Users\chris.li2\\3D_medical',
+    #         model_folder='D:\py_projects\\3DUnet\models',
+    #         factor=4,
+    #         train_bs=2,
+    #         val_bs=4
+    #         )
+    m.predict(test_img_dir='C:\\Users\chris.li2\\3D_medical_test',predict_model_path=None)
 
 
 
