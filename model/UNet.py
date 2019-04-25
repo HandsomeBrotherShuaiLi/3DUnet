@@ -185,6 +185,19 @@ class UNet(object):
                 if i.endswith('_ID') or i.endswith('Name'):
                     print(i, operations[i])
 
+
+class GAN_Unet(object):
+    def __init__(self,input_shape,label_numbel=4):
+        self.input_shape=input_shape
+        self.label_number=label_numbel
+    def generator(self,z,phase):
+        """
+        
+        :param z:
+        :param phase:
+        :return:
+        """
+
 if __name__=="__main__":
     m=UNet(
         input_shape=(8, None,None,1),
